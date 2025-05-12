@@ -75,6 +75,3 @@ You can modify the following parameters in the script:
 - Sampling depth for diversity analyses
 - Taxonomic classifier
 
-## License
-
-This workflow is provided under the MIT License.

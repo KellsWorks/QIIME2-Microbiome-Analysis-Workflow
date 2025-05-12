@@ -34,7 +34,7 @@ if [ "$FASTQ_COUNT" -eq 0 ]; then
 fi
 
 # Create a manifest file for importing the data
-echo -e "sample-id\tabsolute-filepath\tdirection" > qiime2_output/temp/manifest.tsv
+echo -e "sample-id\tforward-absolute-filepath\treverse-absolute-filepath" > qiime2_output/temp/manifest.tsv
 
 # Find all forward reads and create manifest entries
 PAIR_COUNT=0
@@ -43,8 +43,7 @@ for FWD in data/*_1.fastq.gz; do
     REV=${FWD/_1.fastq.gz/_2.fastq.gz}
 
     if [ -f "$REV" ]; then
-        echo -e "$SAMPLE\t$(readlink -f $FWD)\tforward" >> qiime2_output/temp/manifest.tsv
-        echo -e "$SAMPLE\t$(readlink -f $REV)\treverse" >> qiime2_output/temp/manifest.tsv
+        echo -e "$SAMPLE\t$(readlink -f $FWD)\t$(readlink -f $REV)" >> qiime2_output/temp/manifest.tsv
         PAIR_COUNT=$((PAIR_COUNT+1))
     fi
 done
@@ -66,6 +65,14 @@ qiime tools import \
   --input-path qiime2_output/temp/manifest.tsv \
   --input-format PairedEndFastqManifestPhred33V2 \
   --output-path qiime2_output/demux-paired-end.qza
+
+# Check if the import was successful
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to import data. Please check the manifest file and your fastq files."
+    echo "Manifest file content:"
+    cat qiime2_output/temp/manifest.tsv
+    exit 1
+fi
 
 qiime demux summarize \
   --i-data qiime2_output/demux-paired-end.qza \

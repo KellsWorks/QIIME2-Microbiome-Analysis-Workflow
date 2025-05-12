@@ -19,26 +19,51 @@ if ! command -v qiime &> /dev/null; then
 fi
 
 echo "Step 1: Preparing manifest file for importing data..."
+# Check if data directory exists and contains fastq files
+if [ ! -d "data" ]; then
+    echo "Error: data directory does not exist. Please create it and add your fastq.gz files."
+    exit 1
+fi
+
+# Count fastq files
+FASTQ_COUNT=$(ls data/*fastq.gz 2>/dev/null | wc -l)
+if [ "$FASTQ_COUNT" -eq 0 ]; then
+    echo "Error: No fastq.gz files found in the data directory."
+    echo "Please add your paired-end fastq.gz files to the data directory."
+    exit 1
+fi
+
 # Create a manifest file for importing the data
-echo "sample-id,absolute-filepath,direction" > qiime2_output/temp/manifest.csv
+echo -e "sample-id\tabsolute-filepath\tdirection" > qiime2_output/temp/manifest.tsv
 
 # Find all forward reads and create manifest entries
+PAIR_COUNT=0
 for FWD in data/*_1.fastq.gz; do
     SAMPLE=$(basename $FWD _1.fastq.gz)
     REV=${FWD/_1.fastq.gz/_2.fastq.gz}
 
     if [ -f "$REV" ]; then
-        echo "$SAMPLE,$(readlink -f $FWD),forward" >> qiime2_output/temp/manifest.csv
-        echo "$SAMPLE,$(readlink -f $REV),reverse" >> qiime2_output/temp/manifest.csv
+        echo -e "$SAMPLE\t$(readlink -f $FWD)\tforward" >> qiime2_output/temp/manifest.tsv
+        echo -e "$SAMPLE\t$(readlink -f $REV)\treverse" >> qiime2_output/temp/manifest.tsv
+        PAIR_COUNT=$((PAIR_COUNT+1))
     fi
 done
 
-echo "Manifest file created at qiime2_output/temp/manifest.csv"
+# Check if any paired files were found
+if [ "$PAIR_COUNT" -eq 0 ]; then
+    echo "Error: No paired fastq.gz files found in the data directory."
+    echo "Files should be named with the pattern: SAMPLEID_1.fastq.gz and SAMPLEID_2.fastq.gz"
+    exit 1
+fi
+
+echo "Found $PAIR_COUNT paired-end samples."
+
+echo "Manifest file created at qiime2_output/temp/manifest.tsv"
 
 echo "Step 2: Importing data into QIIME2..."
 qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
-  --input-path qiime2_output/temp/manifest.csv \
+  --input-path qiime2_output/temp/manifest.tsv \
   --input-format PairedEndFastqManifestPhred33V2 \
   --output-path qiime2_output/demux-paired-end.qza
 

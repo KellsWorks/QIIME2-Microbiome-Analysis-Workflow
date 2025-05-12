@@ -5,6 +5,7 @@ This repository contains a complete QIIME2 workflow for analyzing microbiome dat
 ## Prerequisites
 
 - QIIME2 installed (recommended version: 2023.5 or later)
+- Install DADA2 using conda(https://anaconda.org/qiime2/q2-dada2) 
 - Paired-end fastq.gz files in the `data/` directory
 - Properly formatted metadata file (`metadata.tsv`)
 

@@ -1,12 +1,4 @@
 #SampleID	trial_point	sex	description
 #q2:types	categorical	categorical	categorical
-ERR4832263	timepoint1	male	ERR4832263_sample
-ERR4832264	timepoint1	female	ERR4832264_sample
-ERR4832265	timepoint1	male	ERR4832265_sample
-ERR4832266	timepoint1	female	ERR4832266_sample
-ERR4832267	timepoint2	male	ERR4832267_sample
-ERR4832268	timepoint2	female	ERR4832268_sample
-ERR4832269	timepoint2	male	ERR4832269_sample
-ERR4832270	timepoint2	female	ERR4832270_sample
 # Add more samples as needed
 # Note: The SampleID must match the prefix of your fastq files (without _1.fastq.gz or _2.fastq.gz)
